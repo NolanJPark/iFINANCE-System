@@ -1,0 +1,12 @@
+﻿@model List<Group12_iFINANCEAPP.Models.GroupNodeViewModel>
+@foreach (var node in Model)
+{
+    <li data-id="@node.Id">
+        <span class="group-name">@node.Name</span>
+        <button class="btnAddChild btn btn-xs btn-success">+</button>
+        <button class="btnDelete btn btn-xs btn-danger">–</button>
+        <ul>
+            @Html.Partial("GroupTree", node.Children)
+        </ul>
+    </li>
+}

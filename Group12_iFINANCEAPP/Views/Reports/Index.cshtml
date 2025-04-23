@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = "Financial Reports";
+}
+<h2>Financial Reports</h2>
+
+<p>
+    @Html.ActionLink("Trial Balance", "TrialBalance", "Reports", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Profit & Loss", "ProfitLoss", "Reports", null, new { @class = "btn btn-success", style = "margin-left:10px;" })
+    @Html.ActionLink("Balance Sheet", "BalanceSheet", "Reports", null, new { @class = "btn btn-info", style = "margin-left:10px;" })
+    @Html.ActionLink("Back to Home", "Index", "Home", null, new { @class = "btn btn-default", style = "margin-left:10px;" })
+</p>

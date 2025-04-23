@@ -1,0 +1,109 @@
+﻿@model List<Group12_iFINANCEAPP.Models.CategoryTreeViewModel>
+@{
+    ViewBag.Title = "Manage Account Groups";
+}
+
+<h2>Manage Account Groups</h2>
+
+<div id="tree-container">
+    @foreach (var cat in Model)
+    {
+        <div class="category-block" data-cat="@cat.CategoryId" style="margin-bottom:25px;">
+            <h3>
+                @cat.CategoryName
+                <button class="btnAddGroup btn btn-xs btn-primary" style="margin-left:10px;">
+                    + Add Group
+                </button>
+            </h3>
+            <ul class="group-tree">
+                @Html.Partial("GroupTree", cat.Groups)
+            </ul>
+        </div>
+    }
+</div>
+
+<button id="btnExit" class="btn btn-default">Exit</button>
+
+@section Scripts {
+<script>
+$(function () {
+    function postJson(url, data, onSuccess) {
+        $.ajax({ url:url, type:'POST', data:data })
+         .done(onSuccess)
+         .fail(function() { alert("Server error."); });
+    }
+
+    //Rename group part, found this on the internet pretty cool
+    //Lets a user edit the group name by double clicking on it
+    //Not going through all the work of adding this to all the editing parts of our website
+    //But it's useful here where there could be many groups to look at and edit
+    $("#tree-container").on("dblclick", "span.group-name", function() {
+        var span = $(this), old = span.text(), li = span.closest("li"),
+            id   = li.data("id"),
+            input = $('<input type="text" class="edit-name form-control input-sm"/>').val(old);
+        span.replaceWith(input);
+        input.focus().blur(function() {
+            var nm = input.val();
+            postJson('@Url.Action("Rename")', { id: id, newName: nm }, function() {
+                input.replaceWith('<span class="group-name">' + nm + '</span>');
+            });
+        });
+    });
+
+    //Add group part, any other ideas than this + or - system?
+    $("#tree-container").on("click", ".btnAddGroup", function() {
+        var block = $(this).closest(".category-block"),
+            catId = block.data("cat"),
+            name  = prompt("New group name:");
+        if (!name) return;
+        postJson('@Url.Action("Add")',
+          { parentId: null, categoryId: catId, name: name },
+          function(res) {
+            block.find("ul.group-tree")
+                 .append(
+                    '<li data-id="'+res.id+'">'+
+                      '<span class="group-name">'+res.name+'</span> '+
+                      '<button class="btnAddChild btn btn-xs btn-success">+</button> '+
+                      '<button class="btnDelete btn btn-xs btn-danger">–</button>'+
+                      '<ul></ul></li>'
+                 );
+          });
+    });
+
+    //Add child part
+    $("#tree-container").on("click", ".btnAddChild", function() {
+        var li = $(this).closest("li"),
+            block = li.closest(".category-block"),
+            catId = block.data("cat"),
+            parentId = li.data("id"),
+            name = prompt("New subgroup name:");
+        if (!name) return;
+        postJson('@Url.Action("Add")',
+          { parentId: parentId, categoryId: catId, name: name },
+          function(res) {
+            li.children("ul").append(
+              '<li data-id="'+res.id+'">'+
+                '<span class="group-name">'+res.name+'</span> '+
+                '<button class="btnAddChild btn btn-xs btn-success">+</button> '+
+                '<button class="btnDelete btn btn-xs btn-danger">–</button>'+
+                '<ul></ul></li>'
+            );
+          });
+    });
+
+    //Delete group 
+    $("#tree-container").on("click", ".btnDelete", function() {
+        if (!confirm("Delete this group and its subgroups?")) return;
+        var li = $(this).closest("li"), id = li.data("id");
+        postJson('@Url.Action("Delete")', { id: id }, function() {
+            li.remove();
+        });
+    });
+
+    //Exit back to dashboard
+    $("#btnExit").click(function() {
+        window.location = '@Url.Action("Index","Home")';
+    });
+});
+    </script>
+}

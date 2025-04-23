@@ -1,0 +1,69 @@
+﻿@model Group12_iFINANCEAPP.Models.BalanceSheetViewModel
+@{
+    ViewBag.Title = "Balance Sheet";
+}
+<h2>Balance Sheet</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Assets</th>
+            <th>Amount</th>
+            <th>Liabilities & Equity</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            //Print each asset alongside either a liability or the Profit/Loss row.
+            int maxRows = Math.Max(Model.AssetItems.Count, Model.LiabilityItems.Count + 1);
+            for (int i = 0; i < maxRows; i++)
+            {
+                <tr>
+                    <td>
+                        @if (i < Model.AssetItems.Count)
+                        {
+                            @Model.AssetItems[i].AccountName
+                        }
+                    </td>
+                    <td>
+                        @if (i < Model.AssetItems.Count)
+                        {
+                            @Model.AssetItems[i].ClosingAmount
+                        }
+                    </td>
+                    <td>
+                        @if (i < Model.LiabilityItems.Count)
+                        {
+                            @Model.LiabilityItems[i].AccountName
+                        }
+                        else if (i == Model.LiabilityItems.Count)
+                        {
+                            <strong>Profit (Loss)</strong>
+                        }
+                    </td>
+                    <td>
+                        @if (i < Model.LiabilityItems.Count)
+                        {
+                            @Model.LiabilityItems[i].ClosingAmount
+                        }
+                        else if (i == Model.LiabilityItems.Count)
+                        {
+                            @Model.ProfitOrLoss
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        <tr>
+            <th>Total</th>
+            <th>@Model.TotalAssets</th>
+            <th>Total</th>
+            <th>@Model.LiabilitiesAndEquityTotal</th>
+        </tr>
+    </tbody>
+</table>
+
+<p>
+    @Html.ActionLink("Back to Reports", "Index", "Reports", null, new { @class = "btn btn-default" })
+</p>

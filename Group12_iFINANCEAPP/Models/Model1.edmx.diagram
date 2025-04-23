@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="d503543bae734b3e899cb0c9d6900b9e" Name="Diagram1">
+        <EntityTypeShape EntityType="Group12_iFINANCEAPP.Models.AccountCategory" Width="1.5" PointX="0.75" PointY="1.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="Group12_iFINANCEAPP.Models.Administrator" Width="1.5" PointX="0.75" PointY="5.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="Group12_iFINANCEAPP.Models.Group" Width="1.5" PointX="3" PointY="1.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="Group12_iFINANCEAPP.Models.MasterAccount" Width="1.5" PointX="5.25" PointY="1.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="Group12_iFINANCEAPP.Models.NonAdminUser" Width="1.5" PointX="3" PointY="5.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="Group12_iFINANCEAPP.Models.Transaction" Width="1.5" PointX="5.25" PointY="5.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="Group12_iFINANCEAPP.Models.TransactionLine" Width="1.5" PointX="7.5" PointY="1" IsExpanded="true" />
+        <EntityTypeShape EntityType="Group12_iFINANCEAPP.Models.UserPassword" Width="1.5" PointX="2.5" PointY="9.25" IsExpanded="true" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_Group_AccountCategory" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_Administrator_UserPassword" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_NonAdminUser_Administrator" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_Group_ParentGroup" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_MasterAccount_Group" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_TransactionLine_FirstMasterAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_TransactionLine_SecondMasterAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_NonAdminUser_UserPassword" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_Transaction_NonAdminUser" ManuallyRouted="false" />
+        <AssociationConnector Association="Group12_iFINANCEAPP.Models.FK_TransactionLine_Transaction" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

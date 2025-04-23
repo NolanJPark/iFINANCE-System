@@ -1,0 +1,60 @@
+﻿@model dynamic
+@{
+    ViewBag.Title = "iFINANCE Dashboard";
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+}
+<!--Few comments because this way of doing them brings me pain ;-;-->
+
+<div class="text-right" style="margin-top:10px;">
+    @Html.ActionLink("Logout", "Logout", "User", null, new { @class = "btn btn-warning" })
+</div>
+
+<div class="jumbotron">
+    <h1>Welcome to iFINANCE</h1>
+    <p class="lead">
+        A comprehensive financial management system for managing accounts, groups, transactions, and reports.
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>@Html.ActionLink("Account Access", "ChangePassword", "User")</h2>
+        <p>Change your account password.</p>
+    </div>
+
+    <!-- Only admins can see User Management -->
+    @if (isAdmin)
+    {
+        <div class="col-md-4">
+            <h2>@Html.ActionLink("User Management", "Index", "User")</h2>
+            <p>View, edit, or create users in the system.</p>
+        </div>
+    }
+
+    <div class="col-md-4">
+        <h2>@Html.ActionLink("Manage Account Groups", "Index", "ManageAccountGroups")</h2>
+        <p>Organize your Chart of Accounts into groups and subgroups.</p>
+    </div>
+</div>
+
+<div class="row" style="margin-top:20px;">
+    <!-- Transactions -->
+    <div class="col-md-4">
+        <h2>@Html.ActionLink("Transactions", "Index", "Transactions")</h2>
+        <p>Create, manage, and delete double-entry transactions.</p>
+    </div>
+
+    <!-- Financial Reports Section -->
+    <div class="col-md-4">
+        <h2>@Html.ActionLink("Financial Reports", "Index", "Reports")</h2>
+        <p>
+            Choose from Trial Balance, Profit &amp; Loss, or Balance Sheet reports.
+        </p>
+    </div>
+
+    <!-- Chart of Accounts (repeat if needed) -->
+    <div class="col-md-4">
+        <h2>@Html.ActionLink("Chart of Accounts", "Index", "MasterAccounts")</h2>
+        <p>Create, manage, and delete your master accounts.</p>
+    </div>
+</div>

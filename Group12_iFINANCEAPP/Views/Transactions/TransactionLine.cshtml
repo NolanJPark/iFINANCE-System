@@ -1,0 +1,61 @@
+﻿@using Group12_iFINANCEAPP.Models
+@model TransactionLineViewModel
+
+@{
+    var idx = (int)ViewData["Index"];
+    var accounts = (SelectList)ViewData["Accounts"];
+}
+
+<tr>
+    <td>
+        @Html.DropDownList(
+            $"Lines[{idx}].DebitAccountID",
+            accounts,
+            "--- Debit Account ---",
+            new { @class = "form-control" })
+    </td>
+    <td>
+        @Html.DropDownList(
+            $"Lines[{idx}].CreditAccountID",
+            accounts,
+            "--- Credit Account ---",
+            new { @class = "form-control" })
+    </td>
+    <td>
+        @Html.TextBox(
+            $"Lines[{idx}].DebitAmount",
+            Model.DebitAmount,
+            new
+                 {
+                @class = "form-control",
+                type = "number",
+                step = "0.01",
+                placeholder = "Debit Amount"
+            })
+    </td>
+    <td>
+        @Html.TextBox(
+            $"Lines[{idx}].CreditAmount",
+            Model.CreditAmount,
+            new
+                 {
+                @class = "form-control",
+                type = "number",
+                step = "0.01",
+                placeholder = "Credit Amount"
+            })
+    </td>
+    <td>
+        @Html.TextBox(
+            $"Lines[{idx}].Comment",
+            Model.Comment,
+            new
+                 {
+                @class = "form-control",
+                placeholder = "Comment (optional)"
+            })
+    </td>
+    <td>
+        <button type="button" class="remove-line btn btn-xs btn-danger" title="Remove this line">×</button>
+    </td>
+</tr>

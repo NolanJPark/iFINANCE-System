@@ -1,0 +1,38 @@
+﻿@model List<Group12_iFINANCEAPP.Models.TransactionListItemViewModel>
+@{
+    ViewBag.Title = "Transactions";
+}
+
+<h2>Transactions</h2>
+
+<p>
+    @Html.ActionLink("New Transaction", "Create", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Exit", "Index", "Home", null, new { @class = "btn btn-default", style = "margin-left:10px;" })
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Total Debit</th>
+            <th>Total Credit</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.Date.ToString("yyyy-MM-dd")</td>
+                <td>@t.Description</td>
+                <td>@t.TotalDebit</td>
+                <td>@t.TotalCredit</td>
+                <td>
+                    @Html.ActionLink("Delete", "Delete", new { id = t.ID },
+                                     new { @class = "btn btn-xs btn-danger" })
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

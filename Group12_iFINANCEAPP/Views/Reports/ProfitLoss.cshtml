@@ -1,0 +1,24 @@
+﻿@model Group12_iFINANCEAPP.Models.ProfitLossViewModel
+@{
+    ViewBag.Title = "Profit & Loss Statement";
+}
+<h2>Profit & Loss Statement</h2>
+
+<table class="table table-striped">
+    <tr>
+        <th>Total Income</th>
+        <td>@Model.TotalIncome</td>
+    </tr>
+    <tr>
+        <th>Total Expenses</th>
+        <td>@Model.TotalExpenses</td>
+    </tr>
+    <tr>
+        <th>Profit (Loss)</th>
+        <td>@Model.ProfitOrLoss</td>
+    </tr>
+</table>
+
+<p>
+    @Html.ActionLink("Back to Reports", "Index", "Reports", null, new { @class = "btn btn-default" })
+</p>

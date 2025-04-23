@@ -1,0 +1,29 @@
+﻿@model List<Group12_iFINANCEAPP.Models.TrialBalanceItemViewModel>
+@{
+    ViewBag.Title = "Trial Balance";
+}
+<h2>Trial Balance</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Account</th>
+            <th>Opening Amount</th>
+            <th>Closing Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Model)
+        {
+            <tr>
+                <td>@row.AccountName</td>
+                <td>@row.OpeningAmount</td>
+                <td>@row.ClosingAmount</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    @Html.ActionLink("Back to Reports", "Index", "Reports", null, new { @class = "btn btn-default" })
+</p>

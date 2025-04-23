@@ -1,0 +1,162 @@
+﻿@model List<Group12_iFINANCEAPP.Models.MasterAccountViewModel>
+@{
+    ViewBag.Title = "Chart of Accounts";
+}
+
+<h2>Chart of Accounts</h2>
+
+<!-- Add Account form -->
+<div class="form-inline" style="margin-bottom:20px;">
+    <input id="newName" class="form-control" placeholder="Account Name" />
+    <input id="newOpening" class="form-control" type="number" step="0.01" placeholder="Opening" />
+    <input id="newClosing" class="form-control" type="number" step="0.01" placeholder="Closing" />
+    <select id="newGroup" class="form-control">
+        <option value="">-- Select Group --</option>
+        @foreach (var opt in (SelectList)ViewBag.Groups)
+        {
+            <option value="@opt.Value">@opt.Text</option>
+        }
+    </select>
+    <button id="btnAddAccount" class="btn btn-primary">Add Account</button>
+
+    <div class="pull-right">
+        @Html.ActionLink("Exit", "Index", "Home", null, new { @class = "btn btn-default" })
+    </div>
+</div>
+
+<table id="accounts-table" class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Opening Amount</th>
+            <th>Closing Amount</th>
+            <th>Group</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var acct in Model)
+        {
+            <tr data-id="@acct.ID">
+                <td>@acct.ID</td>
+                <td class="editable" data-field="name">@acct.Name</td>
+                <td class="editable" data-field="opening">@acct.OpeningAmount</td>
+                <td class="editable" data-field="closing">@acct.ClosingAmount</td>
+                <td>
+                    @{
+                        var orig = ((SelectList)ViewBag.Groups).Items;
+                        var groupSelectList = new SelectList(
+                            orig,
+                            "ID",
+                            "Name",
+                            acct.GroupID
+                        );
+                    }
+                    @Html.DropDownList(
+                        "grp-" + acct.ID,
+                        groupSelectList,
+                        new { @class = "form-control group-select", data_field = "group" }
+                    )
+                </td>
+                <td><button class="btnDelete btn btn-xs btn-danger">×</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+$(function() {
+    //Helper function
+    function postJson(url, data, onSuccess) {
+        $.ajax({ url:url, type:'POST', data:data })
+         .done(onSuccess)
+         .fail(function(){ alert("Server error."); });
+    }
+
+    //Add master account part
+    $("#btnAddAccount").click(function(){
+        var name    = $("#newName").val().trim(),
+            opening = $("#newOpening").val(),
+            closing = $("#newClosing").val(),
+            groupId = $("#newGroup").val();
+
+        if (!name || !opening || !closing || !groupId) {
+            alert("All fields are required.");
+            return;
+        }
+
+        postJson('@Url.Action("Add","MasterAccounts")', {
+            name: name,
+            opening: opening,
+            closing: closing,
+            groupId: groupId
+        }, function(res) {
+            if (!res.success) { alert(res.message); return; }
+
+            //Add new row
+            var row = '<tr data-id="'+res.id+'">' +
+                '<td>'+res.id+'</td>' +
+                '<td class="editable" data-field="name">'+res.name+'</td>' +
+                '<td class="editable" data-field="opening">'+res.opening+'</td>' +
+                '<td class="editable" data-field="closing">'+res.closing+'</td>' +
+                '<td><select class="form-control group-select" data_field="group">';
+
+            //Build options
+            @foreach (var opt in (SelectList)ViewBag.Groups)
+            {
+                <text>row += '<option value="@opt.Value"'+(res.groupId=='@opt.Value'?' selected':'')+'>@opt.Text</option>';</text>
+            }
+
+            row += '</select></td>' +
+                   '<td><button class="btnDelete btn btn-xs btn-danger">×</button></td>' +
+                   '</tr>';
+
+            $("#accounts-table tbody").append(row);
+
+            //Clear form
+            $("#newName, #newOpening, #newClosing").val("");
+            $("#newGroup").val("");
+        });
+    });
+
+    //Edit part
+    $("#accounts-table").on("dblclick", ".editable", function() {
+        var td = $(this), old = td.text(), field = td.data("field"),
+            input = $('<input class="form-control input-sm"/>').val(old);
+        td.empty().append(input);
+        input.focus().blur(function() {
+            var val = input.val(), id = td.closest("tr").data("id");
+            postJson('@Url.Action("Update","MasterAccounts")', {
+                id: id, field: field, value: val
+            }, function(res) {
+                if (res.success) td.text(val);
+                else { alert(res.message); td.text(old); }
+            });
+        });
+    });
+
+    //Change group part
+    $("#accounts-table").on("change", ".group-select", function() {
+        var sel = $(this), id = sel.closest("tr").data("id"),
+            field = sel.attr("data_field"), val = sel.val();
+        postJson('@Url.Action("Update","MasterAccounts")', {
+            id: id, field: field, value: val
+        }, function(res){
+            if (!res.success) alert(res.message);
+        });
+    });
+
+    //Delete part
+    $("#accounts-table").on("click", ".btnDelete", function(){
+        if (!confirm("Delete this account?")) return;
+        var tr = $(this).closest("tr"), id = tr.data("id");
+        postJson('@Url.Action("Delete","MasterAccounts")', { id: id }, function(res) {
+            if (res.success) tr.remove();
+            else alert(res.message);
+        });
+    });
+});
+    </script>
+}
