@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web.Mvc;
 using Group12_iFINANCEAPP.Models;
 
@@ -85,13 +86,29 @@ namespace Group12_iFINANCEB.Controllers
 
         // POST: Delete Master Account
         [HttpPost]
-        public JsonResult Delete(string id)
+        [Authorize]
+        public JsonResult DeleteAccount(string id)
         {
-            var acct = db.MasterAccount.Find(id);
-            if (acct == null)
-                return Json(new { success = false, message = "Account not found." });
-            db.MasterAccount.Remove(acct);
+            if (String.IsNullOrEmpty(id))
+                return Json(new { success = false, message = "No account ID provided." });
 
+            var account = db.MasterAccount.Find(id);
+            if (account == null)
+                return Json(new { success = false, message = "Account not found." });
+
+            // Block if it’s in use
+            bool inUse = db.TransactionLine.Any(tl =>
+                tl.FirstMasterAccountID == id ||
+                tl.SecondMasterAccountID == id
+            );
+            if (inUse)
+                return Json(new
+                {
+                    success = false,
+                    message = "Cannot delete this account because it’s used in transactions."
+                });
+
+            db.MasterAccount.Remove(account);
             db.SaveChanges();
             return Json(new { success = true });
         }

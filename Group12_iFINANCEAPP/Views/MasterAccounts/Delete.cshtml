@@ -1,56 +1,41 @@
 ﻿@model Group12_iFINANCEAPP.Models.MasterAccount
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Delete Master Account";
 }
 
-<h2>Delete</h2>
+<h2>Delete Master Account</h2>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>MasterAccount</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.name)
-        </dt>
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
 
-        <dd>
-            @Html.DisplayFor(model => model.name)
-        </dd>
+<dl class="dl-horizontal">
+    <dt>@Html.DisplayNameFor(m => m.name)</dt>
+    <dd>@Html.DisplayFor(m => m.name)</dd>
+    <dt>@Html.DisplayNameFor(m => m.openingAmount)</dt>
+    <dd>@Html.DisplayFor(m => m.openingAmount)</dd>
+    <dt>@Html.DisplayNameFor(m => m.closingAmount)</dt>
+    <dd>@Html.DisplayFor(m => m.closingAmount)</dd>
+    <dt>Group</dt>
+    <dd>@Model.Group.name</dd>
+</dl>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.openingAmount)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.openingAmount)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.closingAmount)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.closingAmount)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Group.Name)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Group.Name)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
+@if (ViewBag.ErrorMessage == null)
+{
+    @using (Html.BeginForm())
+    {
         @Html.AntiForgeryToken()
-
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+        <div class="form-actions">
+            <input type="submit" value="Delete" class="btn btn-danger" />
+            @Html.ActionLink("Cancel", "Index", null, new { @class = "btn btn-default" })
         </div>
     }
-</div>
+}
+else
+{
+    <p>
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default" })
+    </p>
+}

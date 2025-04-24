@@ -128,10 +128,22 @@ namespace Group12_iFINANCEAPP.Controllers
         // GET: Delete transaction
         public ActionResult Delete(string id)
         {
-            if (id == null) return new HttpStatusCodeResult(400);
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
             var txn = db.Transaction.Find(id);
-            if (txn == null) return HttpNotFound();
-            return View(txn);
+            if (txn == null)
+                return HttpNotFound();
+
+            var model = new TransactionListItemViewModel
+            {
+                ID = txn.ID,
+                Date = txn.date,
+                Description = txn.description,
+                TotalDebit = txn.TransactionLine.Sum(l => l.debitedAmount),
+                TotalCredit = txn.TransactionLine.Sum(l => l.creditedAmount)
+            };
+            return View(model);
         }
 
         // POST: Delete transaction
@@ -139,12 +151,36 @@ namespace Group12_iFINANCEAPP.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(string id)
         {
-            //Remove lines first
-            var lines = db.TransactionLine.Where(l => l.TransactionID == id);
-            db.TransactionLine.RemoveRange(lines);
+            //Load the transaction and include its detail lines
+            var txn = db.Transaction.Include(t => t.TransactionLine).FirstOrDefault(t => t.ID == id);
+            if (txn == null)
+                return HttpNotFound();
 
-            //Remove header
-            var txn = db.Transaction.Find(id);
+            //Adjust balances properly based on what type of account it is
+            foreach (var line in txn.TransactionLine.ToList())
+            {
+                //Debit calculations
+                var drAcct = db.MasterAccount.Include(a => a.Group.AccountCategory).First(a => a.ID == line.FirstMasterAccountID);
+                var drType = drAcct.Group.AccountCategory.type; 
+
+                if (drType == "Debit")
+                    drAcct.closingAmount -= line.debitedAmount;
+                else
+                    drAcct.closingAmount += line.debitedAmount;
+
+                //Credit calculations
+                var crAcct = db.MasterAccount.Include(a => a.Group.AccountCategory).First(a => a.ID == line.SecondMasterAccountID);
+                var crType = crAcct.Group.AccountCategory.type;
+
+                if (crType == "Credit")
+                    crAcct.closingAmount -= line.creditedAmount;
+                else
+                    crAcct.closingAmount += line.creditedAmount;
+
+                //Remove the line
+                db.TransactionLine.Remove(line);
+            }
+
             db.Transaction.Remove(txn);
             db.SaveChanges();
             return RedirectToAction("Index");

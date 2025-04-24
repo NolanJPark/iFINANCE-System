@@ -152,7 +152,7 @@ $(function() {
     $("#accounts-table").on("click", ".btnDelete", function(){
         if (!confirm("Delete this account?")) return;
         var tr = $(this).closest("tr"), id = tr.data("id");
-        postJson('@Url.Action("Delete","MasterAccounts")', { id: id }, function(res) {
+        postJson('@Url.Action("DeleteAccount","MasterAccounts")', { id: id }, function(res) {
             if (res.success) tr.remove();
             else alert(res.message);
         });

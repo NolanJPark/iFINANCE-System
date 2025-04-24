@@ -10,7 +10,6 @@ using System.Web.Mvc;
 using System.Web.Security;
 using System.Xml.Linq;
 using Group12_iFINANCEAPP.Models;
-using Group12_iFINANCEB.Models;
 
 namespace Group12_iFINANCEAPP.Controllers
 {
@@ -203,15 +202,13 @@ namespace Group12_iFINANCEAPP.Controllers
         [Authorize]
         public ActionResult ChangePassword()
         {
-            //Get current username
+            //Get the user who's logged into the system
             var username = User.Identity.Name;
             ViewBag.Username = username;
 
-            //Lookup user's ID then check if they're an Admin
-            var userPass = db.UserPassword.FirstOrDefault(u => u.username == username);
-            bool isAdmin = userPass != null && db.Administrator.Any(a => a.ID == userPass.ID);
-
-            ViewBag.IsAdmin = isAdmin;
+            //Check if they're an admin
+            var up = db.UserPassword.FirstOrDefault(u => u.username == username);
+            ViewBag.IsAdmin = (up != null) && db.Administrator.Any(a => a.ID == up.ID);
 
             return View();
         }
@@ -220,20 +217,39 @@ namespace Group12_iFINANCEAPP.Controllers
         [HttpPost, ValidateAntiForgeryToken, Authorize]
         public ActionResult ChangePassword(ChangePasswordViewModel model)
         {
+            //Re-fill the same ViewBag for redisplay
+            var username = User.Identity.Name;
+            ViewBag.Username = username;
+            ViewBag.IsAdmin = db.Administrator.Any(a => a.ID == db.UserPassword
+            .Where(u => u.username == username)
+            .Select(u => u.ID)
+            .FirstOrDefault());
+
+            //If validation fails redisplay
             if (!ModelState.IsValid)
                 return View(model);
 
-            var userPass = db.UserPassword.FirstOrDefault(u => u.username == User.Identity.Name);
-            if (userPass != null)
+            //Lookup UserPassword record
+            var userPass = db.UserPassword.FirstOrDefault(u => u.username == username);
+            if (userPass == null)
             {
-                userPass.encryptedPassword = model.NewPassword;
-                db.SaveChanges();
-                TempData["Success"] = "Your password has been changed.";
-                return RedirectToAction("Index", "Home");
+                ModelState.AddModelError("", "User record not found.");
+                return View(model);
             }
 
-            ModelState.AddModelError("", "User record not found.");
-            return View(model);
+            //Verify current password
+            if (userPass.encryptedPassword != model.OldPassword)
+            {
+                ModelState.AddModelError(nameof(model.OldPassword), "Current password is incorrect.");
+                return View(model);
+            }
+
+            userPass.encryptedPassword = model.NewPassword;
+            db.SaveChanges();
+
+            //Cool little confirmation
+            TempData["Success"] = "Your password has been changed.";
+            return RedirectToAction("ChangePassword");
         }
 
 

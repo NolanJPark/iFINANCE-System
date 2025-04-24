@@ -1,16 +1,23 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Group12_iFINANCEB.Models
+namespace Group12_iFINANCEAPP.Models
 {
-    //Model for the changing password
     public class ChangePasswordViewModel
     {
-        [Required, DataType(DataType.Password)]
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "Current password")]
+        public string OldPassword { get; set; }
+
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "New password")]
         public string NewPassword { get; set; }
 
-        //Basic error trap
-        [Required, DataType(DataType.Password)]
-        [Compare("NewPassword", ErrorMessage = "Passwords must match.")]
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm new password")]
+        [Compare("NewPassword", ErrorMessage = "The new password and confirmation do not match.")]
         public string ConfirmPassword { get; set; }
     }
 }
