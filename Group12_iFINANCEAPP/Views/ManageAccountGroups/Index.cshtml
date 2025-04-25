@@ -25,7 +25,7 @@
 <button id="btnExit" class="btn btn-default">Exit</button>
 
 @section Scripts {
-<script>
+    <script>
 $(function () {
     function postJson(url, data, onSuccess) {
         $.ajax({ url:url, type:'POST', data:data })
@@ -91,12 +91,18 @@ $(function () {
           });
     });
 
-    //Delete group 
+    //Delete group
     $("#tree-container").on("click", ".btnDelete", function() {
         if (!confirm("Delete this group and its subgroups?")) return;
-        var li = $(this).closest("li"), id = li.data("id");
-        postJson('@Url.Action("Delete")', { id: id }, function() {
-            li.remove();
+        var li = $(this).closest("li"),
+            id = li.data("id");
+
+        postJson('@Url.Action("Delete")', { id: id }, function(res) {
+            if (res.success) {
+                li.remove();
+            } else {
+                alert(res.message);
+            }
         });
     });
 

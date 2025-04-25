@@ -88,16 +88,41 @@ namespace Group12_iFINANCEB.Controllers
             db.Group.Remove(g);
         }
 
+        //Recursively collect this group and all subgroups for checking
+        private void CollectSubtreeIds(string id, List<string> bucket)
+        {
+            bucket.Add(id);
+            var children = db.Group.Where(g => g.ParentGroupID == id).Select(g => g.ID).ToList();
+            foreach (var childId in children)
+                CollectSubtreeIds(childId, bucket);
+        }
+
         // POST: Delete group + group subtree
         [HttpPost]
         public JsonResult Delete(string id)
         {
             var g = db.Group.Find(id);
             if (g == null)
-                return Json(new { success = false, message = "Not found." });
-            DeleteRecursive(id);
+                return Json(new { success = false, message = "Group not found." });
 
+            //Build list of all IDs that would be removed to check against the Master Accounts
+            var toDelete = new List<string>();
+            CollectSubtreeIds(id, toDelete);
+
+            //Check if a MasterAccount references any of those IDs
+            bool inUse = db.MasterAccount.Any(ma => toDelete.Contains(ma.GroupID));
+            if (inUse)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Cannot delete this group (or its sub-groups) because one or more master accounts belong to it. Please reassign or delete those master accounts first."
+                });
+            }
+
+            DeleteRecursive(id);
             db.SaveChanges();
+
             return Json(new { success = true });
         }
 
