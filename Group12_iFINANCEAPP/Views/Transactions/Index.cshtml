@@ -17,6 +17,7 @@
             <th>Description</th>
             <th>Total Debit</th>
             <th>Total Credit</th>
+            <th>Edit</th>
             <th></th>
         </tr>
     </thead>
@@ -28,6 +29,9 @@
                 <td>@t.Description</td>
                 <td>@t.TotalDebit</td>
                 <td>@t.TotalCredit</td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", "Transactions", new { id = t.ID }, new { @class = "btn btn-sm btn-primary" })
+                </td>
                 <td>
                     @Html.ActionLink("Delete", "Delete", new { id = t.ID },
                                      new { @class = "btn btn-xs btn-danger" })

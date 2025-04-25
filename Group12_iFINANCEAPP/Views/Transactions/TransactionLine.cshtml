@@ -2,66 +2,65 @@
 @model TransactionLineViewModel
 
 @{
-    // Always treat Index as a string, whether it's "0", "1", or "__index__"
     var idx = ViewData["Index"]?.ToString() ?? "0";
-    var accounts = (SelectList)ViewData["Accounts"];
+    var allAccounts = (IEnumerable<SelectListItem>)ViewData["Accounts"];
+    var debitSelect = new SelectList(allAccounts, "Value", "Text", Model.DebitAccountID);
+    var creditSelect = new SelectList(allAccounts, "Value", "Text", Model.CreditAccountID);
 }
 
 <tr>
     <td>
         @Html.DropDownList(
             $"Lines[{idx}].DebitAccountID",
-            accounts,
+            debitSelect,
             "--- Debit Account ---",
-            new { @class = "form-control" }
-        )
+            new { @class = "form-control" })
     </td>
     <td>
         @Html.DropDownList(
             $"Lines[{idx}].CreditAccountID",
-            accounts,
+            creditSelect,
             "--- Credit Account ---",
-            new { @class = "form-control" }
-        )
+            new { @class = "form-control" })
     </td>
     <td>
         @Html.TextBox(
             $"Lines[{idx}].DebitAmount",
-            (Model?.DebitAmount ?? 0m).ToString("0.##"),
+            Model.DebitAmount,
             new
                  {
                 @class = "form-control",
                 type = "number",
                 step = "0.01",
                 placeholder = "Debit Amount"
-            }
-        )
+            })
     </td>
     <td>
         @Html.TextBox(
             $"Lines[{idx}].CreditAmount",
-            (Model?.CreditAmount ?? 0m).ToString("0.##"),
+            Model.CreditAmount,
             new
                  {
                 @class = "form-control",
                 type = "number",
                 step = "0.01",
                 placeholder = "Credit Amount"
-            }
-        )
+            })
     </td>
     <td>
         @Html.TextBox(
             $"Lines[{idx}].Comment",
-            Model?.Comment,
+            Model.Comment,
             new
                  {
                 @class = "form-control",
                 placeholder = "Comment (optional)"
-            }
-        )
+            })
     </td>
     <td>
-        <button type="button" class="remove-line btn btn-xs btn-danger" title="Remove this line">×</button>
+        <button type="button" class="remove-line btn btn-xs btn-danger"
+                title="Remove this line">
+            ×
+        </button>
     </td>
 </tr>

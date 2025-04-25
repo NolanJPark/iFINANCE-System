@@ -186,6 +186,105 @@ namespace Group12_iFINANCEAPP.Controllers
             return RedirectToAction("Index");
         }
 
+        // GET: Transactions/Edit/{id}
+        public ActionResult Edit(string id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(400);
+
+            // Load the transaction + its lines
+            var txn = db.Transaction
+                        .Include(t => t.TransactionLine)
+                        .FirstOrDefault(t => t.ID == id);
+            if (txn == null)
+                return HttpNotFound();
+
+            // Map to your TransactionViewModel
+            var vm = new TransactionViewModel
+            {
+                ID = txn.ID,
+                Date = txn.date,
+                Description = txn.description,
+                Lines = txn.TransactionLine
+                                .Select(line => new TransactionLineViewModel
+                                {
+                                    DebitAccountID = line.FirstMasterAccountID,
+                                    CreditAccountID = line.SecondMasterAccountID,
+                                    DebitAmount = line.debitedAmount,
+                                    CreditAmount = line.creditedAmount,
+                                    Comment = line.comment
+                                })
+                                .ToList()
+            };
+
+            // Dropdown data
+            ViewBag.Accounts = new SelectList(
+                db.MasterAccount.ToList(),
+                "ID", "name"
+            );
+
+            return View(vm);
+        }
+
+        // POST: Transactions/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(TransactionViewModel model)
+        {
+            // 1) Check model validity first
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Accounts = new SelectList(db.MasterAccount, "ID", "name");
+                return View(model);
+            }
+
+            // 2) Enforce debits==credits
+            var totalDebit = model.Lines.Sum(l => l.DebitAmount);
+            var totalCredit = model.Lines.Sum(l => l.CreditAmount);
+            if (totalDebit != totalCredit)
+            {
+                ModelState.AddModelError(
+                    "",
+                    $"Total debit ({totalDebit:C}) must equal total credit ({totalCredit:C})."
+                );
+                ViewBag.Accounts = new SelectList(db.MasterAccount, "ID", "name");
+                return View(model);
+            }
+
+            // 3) Fetch existing transaction + lines
+            var txn = db.Transaction
+                        .Include(t => t.TransactionLine)
+                        .FirstOrDefault(t => t.ID == model.ID);
+            if (txn == null)
+                return HttpNotFound();
+
+            // 4) Update header
+            txn.date = model.Date;
+            txn.description = model.Description;
+
+            // 5) Replace lines
+            foreach (var old in txn.TransactionLine.ToList())
+                db.TransactionLine.Remove(old);
+
+            foreach (var lineVm in model.Lines)
+            {
+                var line = new TransactionLine
+                {
+                    ID = Guid.NewGuid().ToString(),
+                    TransactionID = txn.ID,
+                    FirstMasterAccountID = lineVm.DebitAccountID,
+                    SecondMasterAccountID = lineVm.CreditAccountID,
+                    debitedAmount = lineVm.DebitAmount,
+                    creditedAmount = lineVm.CreditAmount,
+                    comment = lineVm.Comment
+                };
+                db.TransactionLine.Add(line);
+            }
+
+            db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
