@@ -186,20 +186,18 @@ namespace Group12_iFINANCEAPP.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET: Transactions/Edit/{id}
+        // GET: Edit transaction
         public ActionResult Edit(string id)
         {
             if (id == null)
                 return new HttpStatusCodeResult(400);
 
-            // Load the transaction + its lines
-            var txn = db.Transaction
-                        .Include(t => t.TransactionLine)
-                        .FirstOrDefault(t => t.ID == id);
+            //Load the transaction and all its lines
+            var txn = db.Transaction.Include(t => t.TransactionLine).FirstOrDefault(t => t.ID == id);
             if (txn == null)
                 return HttpNotFound();
 
-            // Map to your TransactionViewModel
+            //Map to the TransactionViewModel
             var vm = new TransactionViewModel
             {
                 ID = txn.ID,
@@ -217,7 +215,6 @@ namespace Group12_iFINANCEAPP.Controllers
                                 .ToList()
             };
 
-            // Dropdown data
             ViewBag.Accounts = new SelectList(
                 db.MasterAccount.ToList(),
                 "ID", "name"
@@ -226,48 +223,58 @@ namespace Group12_iFINANCEAPP.Controllers
             return View(vm);
         }
 
-        // POST: Transactions/Edit
+        // POST: Edit Transaction
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(TransactionViewModel model)
         {
-            // 1) Check model validity first
-            if (!ModelState.IsValid)
+            //Make sure credit = debit
+            if (!ModelState.IsValid || model.Lines.Sum(l => l.DebitAmount) != model.Lines.Sum(l => l.CreditAmount))
             {
+                if (model.Lines.Sum(l => l.DebitAmount) != model.Lines.Sum(l => l.CreditAmount))
+                    ModelState.AddModelError("",
+                        $"Total debits ({model.Lines.Sum(l => l.DebitAmount):C}) " +
+                        $"must equal total credits ({model.Lines.Sum(l => l.CreditAmount):C}).");
+
                 ViewBag.Accounts = new SelectList(db.MasterAccount, "ID", "name");
                 return View(model);
             }
 
-            // 2) Enforce debits==credits
-            var totalDebit = model.Lines.Sum(l => l.DebitAmount);
-            var totalCredit = model.Lines.Sum(l => l.CreditAmount);
-            if (totalDebit != totalCredit)
+            //Load existing transaction and lines
+            var txn = db.Transaction.Include(t => t.TransactionLine).FirstOrDefault(t => t.ID == model.ID);
+            if (txn == null) return HttpNotFound();
+
+            //Revert old lines’ effects
+            foreach (var oldLine in txn.TransactionLine.ToList())
             {
-                ModelState.AddModelError(
-                    "",
-                    $"Total debit ({totalDebit:C}) must equal total credit ({totalCredit:C})."
-                );
-                ViewBag.Accounts = new SelectList(db.MasterAccount, "ID", "name");
-                return View(model);
+                //Subtract old debit
+                var drAcc = db.MasterAccount.Find(oldLine.FirstMasterAccountID);
+                if (drAcc != null)
+                    drAcc.closingAmount -= oldLine.debitedAmount;
+
+                //Add back old credit
+                var crAcc = db.MasterAccount.Find(oldLine.SecondMasterAccountID);
+                if (crAcc != null)
+                    crAcc.closingAmount += oldLine.creditedAmount;
+
+                //Remove the old line
+                db.TransactionLine.Remove(oldLine);
             }
 
-            // 3) Fetch existing transaction + lines
-            var txn = db.Transaction
-                        .Include(t => t.TransactionLine)
-                        .FirstOrDefault(t => t.ID == model.ID);
-            if (txn == null)
-                return HttpNotFound();
-
-            // 4) Update header
-            txn.date = model.Date;
-            txn.description = model.Description;
-
-            // 5) Replace lines
-            foreach (var old in txn.TransactionLine.ToList())
-                db.TransactionLine.Remove(old);
-
+            //Insert new lines and apply their effects
             foreach (var lineVm in model.Lines)
             {
+                //Apply new debit
+                var drAcc = db.MasterAccount.Find(lineVm.DebitAccountID);
+                if (drAcc != null)
+                    drAcc.closingAmount += lineVm.DebitAmount;
+
+                //Apply new credit
+                var crAcc = db.MasterAccount.Find(lineVm.CreditAccountID);
+                if (crAcc != null)
+                    crAcc.closingAmount -= lineVm.CreditAmount;
+
+                //Add back to the database
                 var line = new TransactionLine
                 {
                     ID = Guid.NewGuid().ToString(),

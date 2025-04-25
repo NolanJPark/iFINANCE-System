@@ -79,7 +79,7 @@
 @section Scripts {
     <script>
         $(function () {
-            // Add new line
+            //Add new line
             $('#add-line').click(function (e) {
                 e.preventDefault();
                 var idx = $('#lines-table tbody tr').length;
@@ -88,7 +88,7 @@
                 $('#lines-table tbody').append(html);
             });
 
-            // Remove a line
+            //Remove a line
             $('#lines-table').on('click', '.remove-line', function (e) {
                 e.preventDefault();
                 $(this).closest('tr').remove();
