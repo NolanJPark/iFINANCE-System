@@ -152,9 +152,30 @@ namespace Group12_iFINANCEAPP.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(string id)
         {
-            NonAdminUser nonAdminUser = db.NonAdminUser.Find(id);
-            db.NonAdminUser.Remove(nonAdminUser);
+            //Find user
+            var user = db.NonAdminUser.Find(id);
+            if (user == null)
+                return HttpNotFound();
+
+            //Delete all that user’s transactions
+            var txns = db.Transaction.Include("TransactionLine").Where(t => t.NonAdminUserID == id).ToList();
+            foreach (var txn in txns)
+            {
+                //Delete each line and the header
+                foreach (var line in txn.TransactionLine.ToList())
+                    db.TransactionLine.Remove(line);
+                db.Transaction.Remove(txn);
+            }
+
+            //Remove users password record too
+            var pw = db.UserPassword.Find(id);
+            if (pw != null)
+                db.UserPassword.Remove(pw);
+
+            db.NonAdminUser.Remove(user);
+
             db.SaveChanges();
+
             return RedirectToAction("Index");
         }
 

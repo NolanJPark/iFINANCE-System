@@ -1,6 +1,17 @@
 ﻿@model Group12_iFINANCEAPP.Models.TransactionViewModel
 @{
     ViewBag.Title = "New Transaction";
+
+    // Build a hidden template for a blank line with placeholder "__index__"
+    var emptyLine = new Group12_iFINANCEAPP.Models.TransactionLineViewModel();
+    var templateHtml = Html.Partial(
+        "TransactionLine",
+        emptyLine,
+        new ViewDataDictionary {
+            { "Index", "__index__" },
+            { "Accounts", ViewBag.Accounts }
+                }
+    ).ToHtmlString();
 }
 
 <h2>New Transaction</h2>
@@ -44,10 +55,38 @@
             }
         </tbody>
     </table>
+
     <button id="add-line" class="btn btn-xs btn-success">+ Add Line</button>
 
     <div class="form-group" style="margin-top:20px;">
         <button type="submit" class="btn btn-primary">Save Transaction</button>
         @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default", style = "margin-left:10px;" })
     </div>
+}
+
+<!-- Hidden template -->
+<script id="line-template" type="text/html">
+    @Html.Raw(templateHtml)
+</script>
+
+@section Scripts {
+    <script>
+    $(function() {
+        $('#add-line').click(function(e) {
+            e.preventDefault();
+            // Compute next index
+            var index = $('#lines-table tbody tr').length;
+            // Clone template and replace placeholder
+            var row = $('#line-template').html().replace(/__index__/g, index);
+            // Append to table
+            $('#lines-table tbody').append(row);
+        });
+
+        // Also handle delete‐row button inside each line
+        $('#lines-table').on('click', '.btn-remove-line', function(e) {
+            e.preventDefault();
+            $(this).closest('tr').remove();
+        });
+    });
+    </script>
 }
